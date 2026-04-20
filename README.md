@@ -79,6 +79,16 @@ personalized-ai-investment-advisor/
 
 ---
 
+## Testing Integration
+
+This section documents the testing strategy and integration verification for the Personalized AI Investment Advisor.
+
+- **Unit Tests**: Validate individual components such as SQL generation, LLM responses, and web search results.
+- **Integration Tests**: Ensure end-to-end flow from natural language query to final investment insight.
+- **CI/CD**: Automated test runs on each commit to maintain code quality and reliability.
+
+---
+
 
 ## 📄 License
 
