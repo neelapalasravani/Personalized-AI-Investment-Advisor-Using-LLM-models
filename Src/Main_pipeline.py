@@ -1,6 +1,10 @@
 import re
+import logging
 import sqlite3
 import pandas as pd
+from langchain.schema import SystemMessage, HumanMessage
+
+logger = logging.getLogger(__name__)
 
 prompt_cache = {}
 
@@ -31,11 +35,15 @@ def generate_sql(llm, question, schema):
         SystemMessage(content=system_prompt + chain_prompt),
         HumanMessage(content=question)
     ]
-    response = llm.invoke(messages)
-    sql = extract_sql(response.content)
-    if sql:
-        prompt_cache[question] = sql
-    return sql
+    try:
+        response = llm.invoke(messages)
+        sql = extract_sql(response.content)
+        if sql:
+            prompt_cache[question] = sql
+        return sql
+    except Exception as e:
+        logger.error(f"LLM API call failed: {e}")
+        return None
 
 def run_sql_query(sql_query, db_file):
     try:

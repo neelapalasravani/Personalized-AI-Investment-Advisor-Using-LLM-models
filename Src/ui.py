@@ -1,19 +1,44 @@
+import logging
 import gradio as gr
 from src.llm_interface import get_llm_instances
 from src.web_search import tavily_search
 from src.advisor_engine import generate_sql, run_sql_query, is_prompt_injection
 from src.utils import format_web_summary
 
+logger = logging.getLogger(__name__)
+
 def build_app(schema, db_file, api_keys):
-    llm_instances = get_llm_instances(api_keys["together"])
-    
+    try:
+        llm_instances = get_llm_instances(api_keys["together"])
+    except KeyError:
+        logger.error("Missing 'together' API key in configuration.")
+        raise
+
     def sql_qa_pipeline(question, model_name):
-        llm = llm_instances[model_name]
-        sql = generate_sql(llm, question, schema)
-        if sql:
-            result = run_sql_query(sql, db_file)
-            return f"**Query:**\n```sql\n{sql}\n```\n\n**Results:**\n{result}"
-        return format_web_summary(question, tavily_search(question, api_keys["tavily"]))
+        try:
+            llm = llm_instances[model_name]
+        except KeyError:
+            logger.error(f"Unknown or unavailable model: {model_name}")
+            return f"Error: Model '{model_name}' is not available."
+
+        try:
+            sql = generate_sql(llm, question, schema)
+            if sql:
+                result = run_sql_query(sql, db_file)
+                return f"**Query:**\n```sql\n{sql}\n```\n\n**Results:**\n{result}"
+        except Exception as e:
+            logger.error(f"SQL generation/execution error: {e}")
+            return f"An error occurred while processing your question: {e}"
+
+        try:
+            web_results = tavily_search(question, api_keys["tavily"])
+            return format_web_summary(question, web_results)
+        except KeyError:
+            logger.error("Missing 'tavily' API key in configuration.")
+            return "Web search is unavailable: missing API key."
+        except Exception as e:
+            logger.error(f"Web search fallback failed: {e}")
+            return f"Web search error: {e}"
 
     def handle_query(dropdown, custom, model_name):
         query = custom.strip() if custom.strip() else dropdown
