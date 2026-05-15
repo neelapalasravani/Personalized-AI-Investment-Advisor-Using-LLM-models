@@ -1,7 +1,7 @@
 import gradio as gr
 from src.llm_interface import get_llm_instances
 from src.web_search import tavily_search
-from src.advisor_engine import generate_sql, run_sql_query, is_prompt_injection
+from src.Main_pipeline import generate_sql, run_sql_query, is_prompt_injection
 from src.utils import format_web_summary
 
 def build_app(schema, db_file, api_keys):
