@@ -1,0 +1,13 @@
+---
+description: API framework choice for LLM streaming endpoints
+globs: Src/api/**/*.py,run_api.py
+alwaysApply: false
+---
+
+# API Framework
+
+Use FastAPI for the API layer in this project.
+
+We chose FastAPI instead of Flask because FastAPI has stronger first-class support for async request handling and streaming responses, which fits LLM response streaming.
+
+When adding API routes, prefer FastAPI-native patterns such as `async def` endpoints, dependency injection, Pydantic schemas, and streaming response primitives.
